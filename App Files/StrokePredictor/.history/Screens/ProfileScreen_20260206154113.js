@@ -20,14 +20,14 @@ export default function ProfileScreen() {
 
   const [gender, setGender] = useState(profileData.gender.toLowerCase());
   const [everMarried, setEverMarried] = useState(
-    profileData.everMarried.toLowerCase(),
+    profileData.everMarried.toLowerCase()
   );
   const [workType, setWorkType] = useState(profileData.workType.toLowerCase());
   const [residenceType, setResidenceType] = useState(
-    profileData.residenceType.toLowerCase(),
+    profileData.residenceType.toLowerCase()
   );
   const [smokingStatus, setSmokingStatus] = useState(
-    profileData.smokingStatus.toLowerCase(),
+    profileData.smokingStatus.toLowerCase()
   );
 
   return (
@@ -285,37 +285,6 @@ const styles = {
   statValue: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#333",
-  },
-  fieldGroup: {
-    marginBottom: 12,
-  },
-  radioGroup: {
-    marginTop: 8,
-  },
-  radioOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 6,
-  },
-  radioOuter: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: "#00796B",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 10,
-  },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#00796B",
-  },
-  radioLabel: {
-    fontSize: 15,
     color: "#333",
   },
   factorRow: {

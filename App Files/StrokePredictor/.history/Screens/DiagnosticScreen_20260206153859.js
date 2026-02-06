@@ -102,9 +102,7 @@ export default function DiagnosticScreen() {
                 onPress={() => setGender(option.value)}
               >
                 <View style={styles.radioOuter}>
-                  {gender === option.value && (
-                    <View style={styles.radioInner} />
-                  )}
+                  {gender === option.value && <View style={styles.radioInner} />}
                 </View>
                 <Text style={styles.radioLabel}>{option.label}</Text>
               </TouchableOpacity>
@@ -348,34 +346,6 @@ const styles = {
     fontSize: 12,
     color: "#999",
     marginBottom: 4,
-  },
-  radioGroup: {
-    marginTop: 8,
-  },
-  radioOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 6,
-  },
-  radioOuter: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: "#00796B",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 10,
-  },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#00796B",
-  },
-  radioLabel: {
-    fontSize: 15,
-    color: "#333",
   },
   input: {
     backgroundColor: "#fff",

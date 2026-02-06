@@ -102,9 +102,7 @@ export default function DiagnosticScreen() {
                 onPress={() => setGender(option.value)}
               >
                 <View style={styles.radioOuter}>
-                  {gender === option.value && (
-                    <View style={styles.radioInner} />
-                  )}
+                  {gender === option.value && <View style={styles.radioInner} />}
                 </View>
                 <Text style={styles.radioLabel}>{option.label}</Text>
               </TouchableOpacity>

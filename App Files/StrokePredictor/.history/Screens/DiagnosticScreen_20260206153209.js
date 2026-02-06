@@ -1,11 +1,5 @@
+import { Text, View, ScrollView, TextInput, TouchableOpacity } from "react-native";
 import { useState } from "react";
-import {
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
 
 export default function DiagnosticScreen() {
   const [gender, setGender] = useState("");
@@ -45,25 +39,10 @@ export default function DiagnosticScreen() {
   const mapWorkType = (value) => {
     const normalized = value.trim().toLowerCase();
     if (normalized === "children") return 0;
-    if (
-      normalized === "govt_job" ||
-      normalized === "govt job" ||
-      normalized === "govtjob"
-    )
-      return 1;
-    if (
-      normalized === "never_worked" ||
-      normalized === "never worked" ||
-      normalized === "neverworked"
-    )
-      return 2;
+    if (normalized === "govt_job" || normalized === "govt job" || normalized === "govtjob") return 1;
+    if (normalized === "never_worked" || normalized === "never worked" || normalized === "neverworked") return 2;
     if (normalized === "private") return 3;
-    if (
-      normalized === "self-employed" ||
-      normalized === "self employed" ||
-      normalized === "selfemployed"
-    )
-      return 4;
+    if (normalized === "self-employed" || normalized === "self employed" || normalized === "selfemployed") return 4;
     return 0;
   };
 
@@ -87,29 +66,15 @@ export default function DiagnosticScreen() {
     <ScrollView style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>Stroke Diagnostic</Text>
-
+        
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Gender</Text>
-          <View style={styles.radioGroup}>
-            {[
-              { label: "Male", value: "male" },
-              { label: "Female", value: "female" },
-              { label: "Other", value: "other" },
-            ].map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={styles.radioOption}
-                onPress={() => setGender(option.value)}
-              >
-                <View style={styles.radioOuter}>
-                  {gender === option.value && (
-                    <View style={styles.radioInner} />
-                  )}
-                </View>
-                <Text style={styles.radioLabel}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Text style={styles.label}>Gender (Male, Female, Other)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. Female"
+            value={gender}
+            onChangeText={setGender}
+          />
         </View>
 
         <View style={styles.inputGroup}>
@@ -128,12 +93,7 @@ export default function DiagnosticScreen() {
             style={styles.checkboxContainer}
             onPress={() => setHasHypertension(!hasHypertension)}
           >
-            <View
-              style={[
-                styles.checkbox,
-                hasHypertension && styles.checkboxChecked,
-              ]}
-            >
+            <View style={[styles.checkbox, hasHypertension && styles.checkboxChecked]}>
               {hasHypertension && <Text style={styles.checkmark}>✓</Text>}
             </View>
             <Text style={styles.checkboxLabel}>Hypertension</Text>
@@ -143,12 +103,7 @@ export default function DiagnosticScreen() {
             style={styles.checkboxContainer}
             onPress={() => setHasHeartDisease(!hasHeartDisease)}
           >
-            <View
-              style={[
-                styles.checkbox,
-                hasHeartDisease && styles.checkboxChecked,
-              ]}
-            >
+            <View style={[styles.checkbox, hasHeartDisease && styles.checkboxChecked]}>
               {hasHeartDisease && <Text style={styles.checkmark}>✓</Text>}
             </View>
             <Text style={styles.checkboxLabel}>Heart Disease</Text>
@@ -156,75 +111,34 @@ export default function DiagnosticScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Ever Married</Text>
-          <View style={styles.radioGroup}>
-            {[
-              { label: "Yes", value: "yes" },
-              { label: "No", value: "no" },
-            ].map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={styles.radioOption}
-                onPress={() => setEverMarried(option.value)}
-              >
-                <View style={styles.radioOuter}>
-                  {everMarried === option.value && (
-                    <View style={styles.radioInner} />
-                  )}
-                </View>
-                <Text style={styles.radioLabel}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Text style={styles.label}>Ever Married (Yes or No)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. Yes"
+            value={everMarried}
+            onChangeText={setEverMarried}
+          />
         </View>
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Work Type</Text>
-          <View style={styles.radioGroup}>
-            {[
-              { label: "Children", value: "children" },
-              { label: "Govt job", value: "govt_job" },
-              { label: "Never worked", value: "never_worked" },
-              { label: "Private", value: "private" },
-              { label: "Self-employed", value: "self-employed" },
-            ].map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={styles.radioOption}
-                onPress={() => setWorkType(option.value)}
-              >
-                <View style={styles.radioOuter}>
-                  {workType === option.value && (
-                    <View style={styles.radioInner} />
-                  )}
-                </View>
-                <Text style={styles.radioLabel}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Text style={styles.inputLabel}>children, Govt_job, Never_worked, Private, Self-employed</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. Private"
+            value={workType}
+            onChangeText={setWorkType}
+          />
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Residence Type</Text>
-          <View style={styles.radioGroup}>
-            {[
-              { label: "Rural", value: "rural" },
-              { label: "Urban", value: "urban" },
-            ].map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={styles.radioOption}
-                onPress={() => setResidenceType(option.value)}
-              >
-                <View style={styles.radioOuter}>
-                  {residenceType === option.value && (
-                    <View style={styles.radioInner} />
-                  )}
-                </View>
-                <Text style={styles.radioLabel}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Text style={styles.label}>Residence Type (Rural or Urban)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. Urban"
+            value={residenceType}
+            onChangeText={setResidenceType}
+          />
         </View>
 
         <View style={styles.inputGroup}>
@@ -251,27 +165,13 @@ export default function DiagnosticScreen() {
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Smoking Status</Text>
-          <View style={styles.radioGroup}>
-            {[
-              { label: "Formerly smoked", value: "formerly smoked" },
-              { label: "Never smoked", value: "never smoked" },
-              { label: "Smokes", value: "smokes" },
-              { label: "Unknown", value: "unknown" },
-            ].map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={styles.radioOption}
-                onPress={() => setSmokingStatus(option.value)}
-              >
-                <View style={styles.radioOuter}>
-                  {smokingStatus === option.value && (
-                    <View style={styles.radioInner} />
-                  )}
-                </View>
-                <Text style={styles.radioLabel}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Text style={styles.inputLabel}>formerly smoked, never smoked, smokes, Unknown</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. never smoked"
+            value={smokingStatus}
+            onChangeText={setSmokingStatus}
+          />
         </View>
 
         <View style={styles.checkboxGroup}>
@@ -279,18 +179,14 @@ export default function DiagnosticScreen() {
             style={styles.checkboxContainer}
             onPress={() => setHadStroke(!hadStroke)}
           >
-            <View
-              style={[styles.checkbox, hadStroke && styles.checkboxChecked]}
-            >
+            <View style={[styles.checkbox, hadStroke && styles.checkboxChecked]}>
               {hadStroke && <Text style={styles.checkmark}>✓</Text>}
             </View>
             <Text style={styles.checkboxLabel}>Previously had Stroke</Text>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          style={styles.calculateButton}
-          onPress={() => {
+        <TouchableOpacity style={styles.calculateButton} onPress={() => {
             const newUserInput = [...userInput];
             newUserInput[0] = mapGender(gender);
             newUserInput[1] = toNumber(age);
@@ -304,15 +200,13 @@ export default function DiagnosticScreen() {
             newUserInput[9] = mapSmokingStatus(smokingStatus);
             newUserInput[10] = hadStroke ? 1 : 0;
             setUserInput(newUserInput);
-          }}
-        >
+          }}>
           <Text style={styles.calculateButtonText}>CALCULATE RISK</Text>
         </TouchableOpacity>
 
         <View style={styles.noteContainer}>
           <Text style={styles.noteText}>
-            Additional information from your profile will be included in the
-            assessment.
+            Additional information from your profile will be included in the assessment.
           </Text>
         </View>
       </View>
@@ -348,34 +242,6 @@ const styles = {
     fontSize: 12,
     color: "#999",
     marginBottom: 4,
-  },
-  radioGroup: {
-    marginTop: 8,
-  },
-  radioOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 6,
-  },
-  radioOuter: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: "#00796B",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 10,
-  },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#00796B",
-  },
-  radioLabel: {
-    fontSize: 15,
-    color: "#333",
   },
   input: {
     backgroundColor: "#fff",

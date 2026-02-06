@@ -20,14 +20,14 @@ export default function ProfileScreen() {
 
   const [gender, setGender] = useState(profileData.gender.toLowerCase());
   const [everMarried, setEverMarried] = useState(
-    profileData.everMarried.toLowerCase(),
+    profileData.everMarried.toLowerCase()
   );
   const [workType, setWorkType] = useState(profileData.workType.toLowerCase());
   const [residenceType, setResidenceType] = useState(
-    profileData.residenceType.toLowerCase(),
+    profileData.residenceType.toLowerCase()
   );
   const [smokingStatus, setSmokingStatus] = useState(
-    profileData.smokingStatus.toLowerCase(),
+    profileData.smokingStatus.toLowerCase()
   );
 
   return (

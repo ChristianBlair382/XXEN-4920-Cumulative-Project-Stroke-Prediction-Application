@@ -89,27 +89,13 @@ export default function DiagnosticScreen() {
         <Text style={styles.title}>Stroke Diagnostic</Text>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Gender</Text>
-          <View style={styles.radioGroup}>
-            {[
-              { label: "Male", value: "male" },
-              { label: "Female", value: "female" },
-              { label: "Other", value: "other" },
-            ].map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={styles.radioOption}
-                onPress={() => setGender(option.value)}
-              >
-                <View style={styles.radioOuter}>
-                  {gender === option.value && (
-                    <View style={styles.radioInner} />
-                  )}
-                </View>
-                <Text style={styles.radioLabel}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Text style={styles.label}>Gender (Male, Female, Other)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. Female"
+            value={gender}
+            onChangeText={setGender}
+          />
         </View>
 
         <View style={styles.inputGroup}>
@@ -156,75 +142,36 @@ export default function DiagnosticScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Ever Married</Text>
-          <View style={styles.radioGroup}>
-            {[
-              { label: "Yes", value: "yes" },
-              { label: "No", value: "no" },
-            ].map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={styles.radioOption}
-                onPress={() => setEverMarried(option.value)}
-              >
-                <View style={styles.radioOuter}>
-                  {everMarried === option.value && (
-                    <View style={styles.radioInner} />
-                  )}
-                </View>
-                <Text style={styles.radioLabel}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Text style={styles.label}>Ever Married (Yes or No)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. Yes"
+            value={everMarried}
+            onChangeText={setEverMarried}
+          />
         </View>
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Work Type</Text>
-          <View style={styles.radioGroup}>
-            {[
-              { label: "Children", value: "children" },
-              { label: "Govt job", value: "govt_job" },
-              { label: "Never worked", value: "never_worked" },
-              { label: "Private", value: "private" },
-              { label: "Self-employed", value: "self-employed" },
-            ].map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={styles.radioOption}
-                onPress={() => setWorkType(option.value)}
-              >
-                <View style={styles.radioOuter}>
-                  {workType === option.value && (
-                    <View style={styles.radioInner} />
-                  )}
-                </View>
-                <Text style={styles.radioLabel}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Text style={styles.inputLabel}>
+            children, Govt_job, Never_worked, Private, Self-employed
+          </Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. Private"
+            value={workType}
+            onChangeText={setWorkType}
+          />
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Residence Type</Text>
-          <View style={styles.radioGroup}>
-            {[
-              { label: "Rural", value: "rural" },
-              { label: "Urban", value: "urban" },
-            ].map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={styles.radioOption}
-                onPress={() => setResidenceType(option.value)}
-              >
-                <View style={styles.radioOuter}>
-                  {residenceType === option.value && (
-                    <View style={styles.radioInner} />
-                  )}
-                </View>
-                <Text style={styles.radioLabel}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Text style={styles.label}>Residence Type (Rural or Urban)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. Urban"
+            value={residenceType}
+            onChangeText={setResidenceType}
+          />
         </View>
 
         <View style={styles.inputGroup}>
@@ -251,27 +198,15 @@ export default function DiagnosticScreen() {
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Smoking Status</Text>
-          <View style={styles.radioGroup}>
-            {[
-              { label: "Formerly smoked", value: "formerly smoked" },
-              { label: "Never smoked", value: "never smoked" },
-              { label: "Smokes", value: "smokes" },
-              { label: "Unknown", value: "unknown" },
-            ].map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={styles.radioOption}
-                onPress={() => setSmokingStatus(option.value)}
-              >
-                <View style={styles.radioOuter}>
-                  {smokingStatus === option.value && (
-                    <View style={styles.radioInner} />
-                  )}
-                </View>
-                <Text style={styles.radioLabel}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Text style={styles.inputLabel}>
+            formerly smoked, never smoked, smokes, Unknown
+          </Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. never smoked"
+            value={smokingStatus}
+            onChangeText={setSmokingStatus}
+          />
         </View>
 
         <View style={styles.checkboxGroup}>
@@ -348,34 +283,6 @@ const styles = {
     fontSize: 12,
     color: "#999",
     marginBottom: 4,
-  },
-  radioGroup: {
-    marginTop: 8,
-  },
-  radioOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 6,
-  },
-  radioOuter: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: "#00796B",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 10,
-  },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#00796B",
-  },
-  radioLabel: {
-    fontSize: 15,
-    color: "#333",
   },
   input: {
     backgroundColor: "#fff",
