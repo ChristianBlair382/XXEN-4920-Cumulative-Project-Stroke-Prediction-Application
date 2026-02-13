@@ -1,11 +1,21 @@
-import { Text, View, ScrollView, TextInput, TouchableOpacity } from "react-native";
 import { useState } from "react";
+import {
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function DiagnosticScreen() {
-  const [systolic, setSystolic] = useState("");
-  const [diastolic, setDiastolic] = useState("");
-  const [cholesterol, setCholesterol] = useState("");
-  const [bloodSugar, setBloodSugar] = useState("");
+  const [gender, setGender] = useState("");
+  const [age, setAge] = useState("");
+  const [hasHypertension, setHasHypertension] = useState(false);
+  const [hasHeartDisease, setHasHeartDisease] = useState(false);
+  const [everMarried, setEverMarried] = useState("");
+  const [workType, setWorkType] = useState("");
+  const [residenceType, setResidenceType] = useState("");
+  const [avgGlucoseLevel, setAvgGlucoseLevel] = useState("");
   const [bmi, setBmi] = useState("");
   const [smokingStatus, setSmokingStatus] = useState("");
   const [diagnosticResult, setDiagnosticResult] = useState(null);
@@ -109,60 +119,162 @@ export default function DiagnosticScreen() {
     <ScrollView style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>Stroke Diagnostic</Text>
-        
+
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Blood Pressure (mm/Hg)</Text>
-          <View style={styles.splitInputContainer}>
-            <View style={styles.splitInput}>
-              <Text style={styles.inputLabel}>Systolic (120)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g. 120"
-                keyboardType="numeric"
-                value={systolic}
-                onChangeText={setSystolic}
-              />
-            </View>
-            <View style={styles.splitInput}>
-              <Text style={styles.inputLabel}>Diastolic (80)</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g. 80"
-                keyboardType="numeric"
-                value={diastolic}
-                onChangeText={setDiastolic}
-              />
-            </View>
+          <Text style={styles.label}>Gender</Text>
+          <View style={styles.radioGroup}>
+            {[
+              { label: "Male", value: "male" },
+              { label: "Female", value: "female" },
+              { label: "Other", value: "other" },
+            ].map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={styles.radioOption}
+                onPress={() => setGender(option.value)}
+              >
+                <View style={styles.radioOuter}>
+                  {gender === option.value && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+                <Text style={styles.radioLabel}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Blood Cholesterol (mg/dL)</Text>
+          <Text style={styles.label}>Age</Text>
           <TextInput
             style={styles.input}
-            placeholder="e.g. 160"
+            placeholder="e.g. 45"
             keyboardType="numeric"
-            value={cholesterol}
-            onChangeText={setCholesterol}
+            value={age}
+            onChangeText={setAge}
+          />
+        </View>
+
+        <View style={styles.checkboxGroup}>
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => setHasHypertension(!hasHypertension)}
+          >
+            <View
+              style={[
+                styles.checkbox,
+                hasHypertension && styles.checkboxChecked,
+              ]}
+            >
+              {hasHypertension && <Text style={styles.checkmark}>✓</Text>}
+            </View>
+            <Text style={styles.checkboxLabel}>Hypertension</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => setHasHeartDisease(!hasHeartDisease)}
+          >
+            <View
+              style={[
+                styles.checkbox,
+                hasHeartDisease && styles.checkboxChecked,
+              ]}
+            >
+              {hasHeartDisease && <Text style={styles.checkmark}>✓</Text>}
+            </View>
+            <Text style={styles.checkboxLabel}>Heart Disease</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Ever Married</Text>
+          <View style={styles.radioGroup}>
+            {[
+              { label: "Yes", value: "yes" },
+              { label: "No", value: "no" },
+            ].map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={styles.radioOption}
+                onPress={() => setEverMarried(option.value)}
+              >
+                <View style={styles.radioOuter}>
+                  {everMarried === option.value && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+                <Text style={styles.radioLabel}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Work Type</Text>
+          <View style={styles.radioGroup}>
+            {[
+              { label: "Children", value: "children" },
+              { label: "Govt job", value: "govt_job" },
+              { label: "Never worked", value: "never_worked" },
+              { label: "Private", value: "private" },
+              { label: "Self-employed", value: "self-employed" },
+            ].map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={styles.radioOption}
+                onPress={() => setWorkType(option.value)}
+              >
+                <View style={styles.radioOuter}>
+                  {workType === option.value && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+                <Text style={styles.radioLabel}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Residence Type</Text>
+          <View style={styles.radioGroup}>
+            {[
+              { label: "Rural", value: "rural" },
+              { label: "Urban", value: "urban" },
+            ].map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={styles.radioOption}
+                onPress={() => setResidenceType(option.value)}
+              >
+                <View style={styles.radioOuter}>
+                  {residenceType === option.value && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+                <Text style={styles.radioLabel}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Average Glucose Level</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. 95.3"
+            keyboardType="numeric"
+            value={avgGlucoseLevel}
+            onChangeText={setAvgGlucoseLevel}
           />
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Blood Sugar (mg/dL)</Text>
+          <Text style={styles.label}>BMI</Text>
           <TextInput
             style={styles.input}
-            placeholder="e.g. 100"
-            keyboardType="numeric"
-            value={bloodSugar}
-            onChangeText={setBloodSugar}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>BMI (kg/m²)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. 25"
+            placeholder="e.g. 27.1"
             keyboardType="numeric"
             value={bmi}
             onChangeText={setBmi}
@@ -170,14 +282,28 @@ export default function DiagnosticScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Weekly Exercise (hours)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. 2.5"
-            keyboardType="numeric"
-            value={exercise}
-            onChangeText={setExercise}
-          />
+          <Text style={styles.label}>Smoking Status</Text>
+          <View style={styles.radioGroup}>
+            {[
+              { label: "Formerly smoked", value: "formerly smoked" },
+              { label: "Never smoked", value: "never smoked" },
+              { label: "Smokes", value: "smokes" },
+              { label: "Unknown", value: "unknown" },
+            ].map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={styles.radioOption}
+                onPress={() => setSmokingStatus(option.value)}
+              >
+                <View style={styles.radioOuter}>
+                  {smokingStatus === option.value && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+                <Text style={styles.radioLabel}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
         <TouchableOpacity
@@ -209,7 +335,8 @@ export default function DiagnosticScreen() {
 
         <View style={styles.noteContainer}>
           <Text style={styles.noteText}>
-            Additional information from your profile will be included in the assessment.
+            Additional information from your profile will be included in the
+            assessment.
           </Text>
         </View>
       </View>
@@ -245,6 +372,34 @@ const styles = {
     fontSize: 12,
     color: "#999",
     marginBottom: 4,
+  },
+  radioGroup: {
+    marginTop: 8,
+  },
+  radioOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 6,
+  },
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#00796B",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#00796B",
+  },
+  radioLabel: {
+    fontSize: 15,
+    color: "#333",
   },
   input: {
     backgroundColor: "#fff",
