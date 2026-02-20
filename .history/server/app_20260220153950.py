@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-import sys
 from typing import List
 
 import torch
@@ -40,10 +39,6 @@ app = FastAPI()
 
 
 def load_checkpoint(path: Path):
-    main_module = sys.modules.get("__main__")
-    if main_module is not None and not hasattr(main_module, "Classifier"):
-      setattr(main_module, "Classifier", Classifier)
-
     try:
         return torch.load(path, map_location="cpu", weights_only=False)
     except TypeError:

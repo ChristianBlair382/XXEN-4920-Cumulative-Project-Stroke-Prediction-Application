@@ -23,32 +23,6 @@ export default function DiagnosticScreen() {
     return Number.isNaN(parsed) ? 0 : parsed;
   };
 
-  const validateInputs = () => {
-    if (!gender) return "Please select Gender.";
-    if (!everMarried) return "Please select Ever Married.";
-    if (!workType) return "Please select Work Type.";
-    if (!residenceType) return "Please select Residence Type.";
-    if (!smokingStatus) return "Please select Smoking Status.";
-
-    const parsedAge = parseFloat(age);
-    if (Number.isNaN(parsedAge)) return "Please enter a valid Age.";
-    if (parsedAge < 0 || parsedAge > 120)
-      return "Age must be between 0 and 120.";
-
-    const parsedGlucose = parseFloat(avgGlucoseLevel);
-    if (Number.isNaN(parsedGlucose))
-      return "Please enter a valid Average Glucose Level.";
-    if (parsedGlucose < 20 || parsedGlucose > 400)
-      return "Average Glucose Level must be between 20 and 400.";
-
-    const parsedBmi = parseFloat(bmi);
-    if (Number.isNaN(parsedBmi)) return "Please enter a valid BMI.";
-    if (parsedBmi < 10 || parsedBmi > 80)
-      return "BMI must be between 10 and 80.";
-
-    return "";
-  };
-
   const buildFeatureVector = () => {
     const features = new Array(21).fill(0);
 
@@ -103,13 +77,6 @@ export default function DiagnosticScreen() {
   };
 
   const handleCalculate = async () => {
-    const validationError = validateInputs();
-    if (validationError) {
-      setErrorMessage(validationError);
-      setDiagnosticResult(null);
-      return;
-    }
-
     setErrorMessage("");
     setDiagnosticResult(null);
     setIsLoading(true);
@@ -332,9 +299,8 @@ export default function DiagnosticScreen() {
         </View>
 
         <TouchableOpacity
-          style={[styles.calculateButton, isLoading && styles.calculateButtonDisabled]}
+          style={styles.calculateButton}
           onPress={handleCalculate}
-          disabled={isLoading}
         >
           <Text style={styles.calculateButtonText}>
             {isLoading ? "CALCULATING..." : "CALCULATE RISK"}
@@ -479,9 +445,6 @@ const styles = {
     padding: 16,
     alignItems: "center",
     marginBottom: 20,
-  },
-  calculateButtonDisabled: {
-    opacity: 0.7,
   },
   calculateButtonText: {
     fontSize: 16,
