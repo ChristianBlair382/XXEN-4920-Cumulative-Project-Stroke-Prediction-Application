@@ -170,14 +170,28 @@ export default function DiagnosticScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Weekly Exercise (hours)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. 2.5"
-            keyboardType="numeric"
-            value={exercise}
-            onChangeText={setExercise}
-          />
+          <Text style={styles.label}>Smoking Status</Text>
+          <View style={styles.radioGroup}>
+            {[
+              { label: "Formerly smoked", value: "formerly smoked" },
+              { label: "Never smoked", value: "never smoked" },
+              { label: "Smokes", value: "smokes" },
+              { label: "Unknown", value: "unknown" },
+            ].map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={styles.radioOption}
+                onPress={() => setSmokingStatus(option.value)}
+              >
+                <View style={styles.radioOuter}>
+                  {smokingStatus === option.value && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+                <Text style={styles.radioLabel}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
         <TouchableOpacity

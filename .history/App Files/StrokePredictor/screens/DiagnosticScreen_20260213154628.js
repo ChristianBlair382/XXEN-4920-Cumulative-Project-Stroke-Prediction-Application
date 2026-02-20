@@ -7,12 +7,6 @@ export default function DiagnosticScreen() {
   const [cholesterol, setCholesterol] = useState("");
   const [bloodSugar, setBloodSugar] = useState("");
   const [bmi, setBmi] = useState("");
-<<<<<<< Updated upstream
-  const [exercise, setExercise] = useState("");
-  const [hasDiabetes, setHasDiabetes] = useState(false);
-  const [hadStroke, setHadStroke] = useState(false);
-
-=======
   const [smokingStatus, setSmokingStatus] = useState("");
   const [diagnosticResult, setDiagnosticResult] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -111,7 +105,6 @@ export default function DiagnosticScreen() {
     }
   };
 
->>>>>>> Stashed changes
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
