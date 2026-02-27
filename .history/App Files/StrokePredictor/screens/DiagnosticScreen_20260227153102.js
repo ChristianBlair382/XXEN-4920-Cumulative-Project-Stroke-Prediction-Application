@@ -16,7 +16,7 @@ export default function DiagnosticScreen() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const API_URL = "http://10.160.25.252:8000/run_diagnostic";
+  const API_URL = "http://10.160.:8000/run_diagnostic";
 
   const toNumber = (value) => {
     const parsed = parseFloat(value);

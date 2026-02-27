@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Stroke API (Uvicorn)",
+      "type": "debugpy",
+      "request": "launch",
+      "python": "D:\\GitHub\\XXEN-4920-Cumulative-Project-Stroke-Prediction-Application\\.venv\\Scripts\\python.exe",
+      "module": "uvicorn",
+      "cwd": "${workspaceFolder}/server",
+      "args": [
+        "app:app",
+        "--reload",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ]
+}
