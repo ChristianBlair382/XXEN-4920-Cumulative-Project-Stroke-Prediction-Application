@@ -1,5 +1,6 @@
 import { Text, View, ScrollView, TextInput, TouchableOpacity } from "react-native";
 import { useState } from "react";
+import { saveLastDiagnosisResult } from "../services/diagnosisRepository";
 
 export default function DiagnosticScreen() {
   const [gender, setGender] = useState("");
@@ -127,10 +128,14 @@ export default function DiagnosticScreen() {
       }
 
       const data = await response.json();
-      setDiagnosticResult({
+      const latestResult = {
         notAtRisk: data.not_at_risk,
         atRisk: data.at_risk,
-      });
+      };
+
+      setDiagnosticResult(latestResult);
+
+      await saveLastDiagnosisResult(latestResult);
     } catch (error) {
       setErrorMessage(
         error instanceof Error
