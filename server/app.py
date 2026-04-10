@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from torch import nn
 
 
-MODEL_PATH = Path(__file__).resolve().parents[1] / "Baseline_Model.pth"
+MODEL_PATH = Path(__file__).resolve().parents[1] / "ReLU_Model.pth"
 EXPECTED_FEATURES = 21
 
 

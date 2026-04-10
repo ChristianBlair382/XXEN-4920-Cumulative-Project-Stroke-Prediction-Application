@@ -1,3 +1,14 @@
+import {
+  get,
+  orderByChild,
+  limitToLast,
+  push,
+  query,
+  ref,
+  set,
+} from "firebase/database";
+import { getFirebaseDatabase, initializeFirebase } from "./firebaseConfig";
+
 const DEFAULT_USER_ID = "default-user";
 
 let inMemoryLastDiagnosis = null;
@@ -18,11 +29,7 @@ const normalizeRecord = (record, userId) => {
 };
 
 export const initializeDiagnosisRepository = async () => {
-  // SQLite setup placeholder for future implementation.
-  // Example (when DB is added):
-  // 1. Open DB
-  // 2. CREATE TABLE IF NOT EXISTS diagnosis_results (...)
-  // 3. Add indexes on (user_id, requested_at)
+  initializeFirebase();
 };
 
 export const saveLastDiagnosisResult = async ({
@@ -43,22 +50,58 @@ export const saveLastDiagnosisResult = async ({
 
   inMemoryLastDiagnosis = normalized;
 
-  // SQLite insert placeholder for future implementation.
-  // Example SQL:
-  // INSERT INTO diagnosis_results (user_id, not_at_risk, at_risk, requested_at)
-  // VALUES (?, ?, ?, ?)
+  const database = getFirebaseDatabase();
+
+  if (!database) {
+    return normalized;
+  }
+
+  const resultsRef = ref(database, `users/${userId}/diagnosisResults`);
+  const newResultRef = push(resultsRef);
+
+  await set(newResultRef, {
+    notAtRisk: normalized.notAtRisk,
+    atRisk: normalized.atRisk,
+    requestedAt: normalized.requestedAt,
+  });
+
+  normalized.id = newResultRef.key;
 
   return normalized;
 };
 
 export const getLastDiagnosisResult = async (userId = DEFAULT_USER_ID) => {
-  // SQLite query placeholder for future implementation.
-  // Example SQL:
-  // SELECT id, user_id AS userId, not_at_risk AS notAtRisk, at_risk AS atRisk, requested_at AS requestedAt
-  // FROM diagnosis_results
-  // WHERE user_id = ?
-  // ORDER BY datetime(requested_at) DESC
-  // LIMIT 1
+  const database = getFirebaseDatabase();
+
+  if (database) {
+    const resultsRef = ref(database, `users/${userId}/diagnosisResults`);
+    const latestResultQuery = query(
+      resultsRef,
+      orderByChild("requestedAt"),
+      limitToLast(1)
+    );
+
+    const snapshot = await get(latestResultQuery);
+
+    if (snapshot.exists()) {
+      const resultsMap = snapshot.val();
+      const [latestResultId] = Object.keys(resultsMap);
+      const latestResult = resultsMap[latestResultId];
+
+      const normalized = normalizeRecord(
+        {
+          id: latestResultId,
+          userId,
+          ...latestResult,
+        },
+        userId
+      );
+
+      inMemoryLastDiagnosis = normalized;
+
+      return normalized;
+    }
+  }
 
   if (!inMemoryLastDiagnosis || inMemoryLastDiagnosis.userId !== userId) {
     return null;
