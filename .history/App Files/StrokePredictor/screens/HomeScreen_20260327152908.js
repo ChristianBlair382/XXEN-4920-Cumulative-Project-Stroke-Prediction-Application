@@ -1,8 +1,55 @@
 import { Text, View, TouchableOpacity } from "react-native";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "expo-router";
+import {
+  formatRiskStatus,
+  getLastDiagnosisResult,
+  initializeDiagnosisRepository,
+} from "../services/diagnosisRepository";
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [latestResult, setLatestResult] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadLatestDiagnosis = async () => {
+      try {
+        await initializeDiagnosisRepository();
+        const record = await getLastDiagnosisResult();
+
+        if (isMounted) {
+          setLatestResult(record);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadLatestDiagnosis();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const statusText = useMemo(() => {
+    if (isLoading) return "Loading";
+    return formatRiskStatus(latestResult);
+  }, [isLoading, latestResult]);
+
+  const statusSubtext = useMemo(() => {
+    if (isLoading) return "Checking your latest diagnostic request...";
+    if (!latestResult) return "Enter diagnostic data to get assessment";
+
+    return `At risk: ${(latestResult.atRisk * 100).toFixed(1)}% • Not at risk: ${
+      (latestResult.notAtRisk * 100).toFixed(1)
+    }%`;
+  }, [isLoading, latestResult]);
 
   return (
     <View style={styles.container}>
@@ -12,8 +59,8 @@ export default function HomeScreen() {
         </View>
         
         <Text style={styles.statusLabel}>CURRENT STATUS</Text>
-        <Text style={styles.statusText}>Not Calculated</Text>
-        <Text style={styles.statusSubtext}>Enter diagnostic data to get assessment</Text>
+        <Text style={styles.statusText}>{statusText}</Text>
+        <Text style={styles.statusSubtext}>{statusSubtext}</Text>
       </View>
 
       <View style={styles.buttonContainer}>
@@ -21,7 +68,7 @@ export default function HomeScreen() {
           style={styles.primaryButton}
           onPress={() => router.push('/diagnostic')}
         >
-          <Text style={styles.primaryButtonText}>Steps to lower risk →</Text>
+          <Text style={styles.primaryButtonText}>Start a New Test</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.secondaryButton}>

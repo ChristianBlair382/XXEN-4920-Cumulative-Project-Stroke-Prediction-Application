@@ -1,9 +1,46 @@
 import { Text, View, ScrollView, TouchableOpacity } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import {
+  formatRiskStatus,
+  getLastDiagnosisResult,
+  initializeDiagnosisRepository,
+} from "../services/diagnosisRepository";
 
 export default function ProfileScreen() {
-  // Mock data - replace with actual user data later
+  const [latestResult, setLatestResult] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+
+      const loadLatestDiagnosis = async () => {
+        try {
+          setIsLoading(true);
+          await initializeDiagnosisRepository();
+          const record = await getLastDiagnosisResult();
+
+          if (isMounted) {
+            setLatestResult(record);
+          }
+        } finally {
+          if (isMounted) {
+            setIsLoading(false);
+          }
+        }
+      };
+
+      loadLatestDiagnosis();
+
+      return () => {
+        isMounted = false;
+      };
+    }, [])
+  );
+
   const profileData = {
-    status: "Extreme Risk",
+    status: isLoading ? "Loading" : formatRiskStatus(latestResult),
     bloodPressure: "130/90 mmHg",
     cholesterol: "170 mg/dL",
     bloodSugar: "110 mg/dL",
@@ -11,6 +48,28 @@ export default function ProfileScreen() {
     exercise: "4 hours",
     hasDiabetes: true,
   };
+
+  const historyText = useMemo(() => {
+    if (isLoading) {
+      return "Loading latest assessment...";
+    }
+
+    if (!latestResult) {
+      return "No assessment history available yet. Complete your first diagnostic to see results here.";
+    }
+
+    const requestedDate = new Date(latestResult.requestedAt).toLocaleString();
+
+    return `Last assessment on ${requestedDate}. At risk: ${(
+      latestResult.atRisk * 100
+    ).toFixed(1)}%, Not at risk: ${(latestResult.notAtRisk * 100).toFixed(1)}%.`;
+  }, [isLoading, latestResult]);
+
+  const latestAssessmentText = useMemo(() => {
+    if (isLoading || !latestResult) return null;
+
+    return `At risk ${ (latestResult.atRisk * 100).toFixed(1)}%`;
+  }, [isLoading, latestResult]);
 
   return (
     <ScrollView style={styles.container}>
@@ -20,6 +79,9 @@ export default function ProfileScreen() {
         <View style={styles.statusCard}>
           <Text style={styles.statusLabel}>Current Status:</Text>
           <Text style={styles.statusValue}>{profileData.status}</Text>
+          {latestAssessmentText ? (
+            <Text style={styles.statusMeta}>{latestAssessmentText}</Text>
+          ) : null}
         </View>
 
         <View style={styles.section}>
@@ -65,9 +127,7 @@ export default function ProfileScreen() {
 
         <View style={styles.historySection}>
           <Text style={styles.historyTitle}>Assessment History</Text>
-          <Text style={styles.historyEmpty}>
-            No assessment history available yet. Complete your first diagnostic to see results here.
-          </Text>
+          <Text style={styles.historyEmpty}>{historyText}</Text>
         </View>
       </View>
     </ScrollView>
@@ -105,6 +165,11 @@ const styles = {
     fontSize: 20,
     fontWeight: "bold",
     color: "#fff",
+  },
+  statusMeta: {
+    fontSize: 13,
+    color: "#fff",
+    marginTop: 6,
   },
   section: {
     backgroundColor: "#fff",
