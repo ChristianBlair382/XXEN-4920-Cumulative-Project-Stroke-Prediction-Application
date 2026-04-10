@@ -79,6 +79,8 @@ def run_diagnostic(payload: DiagnosticRequest) -> dict:
         tensor = torch.tensor([payload.features], dtype=torch.float32)
         output = MODEL(tensor).squeeze(0).tolist()
 
+    output = nn.Softmax(dim=0)(torch.tensor(output)).tolist()
+
     not_at_risk = float(output[0])
     at_risk = float(output[1])
 
