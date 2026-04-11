@@ -1,4 +1,5 @@
 fastapi==0.115.8
+numpy==2.2.3
 pydantic==2.10.6
 torch
 uvicorn==0.34.0

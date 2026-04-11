@@ -77,9 +77,23 @@ def run_diagnostic(payload: DiagnosticRequest) -> dict:
 
     with torch.no_grad():
         tensor = torch.tensor([payload.features], dtype=torch.float32)
-        output = MODEL(tensor).squeeze(0).tolist()
+        raw_output = MODEL(tensor).squeeze(0)
 
-    output = nn.Softmax(dim=0)(torch.tensor(output)).tolist()
+        if raw_output.ndim != 1:
+            raw_output = raw_output.flatten()
+
+        if raw_output.numel() == 2:
+            probabilities = torch.softmax(raw_output, dim=0)
+        elif raw_output.numel() == 1:
+            at_risk_prob = torch.sigmoid(raw_output[0])
+            probabilities = torch.stack((1.0 - at_risk_prob, at_risk_prob))
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Model returned {raw_output.numel()} outputs; expected 1 or 2.",
+            )
+
+    output = probabilities.tolist()
 
     not_at_risk = float(output[0])
     at_risk = float(output[1])
