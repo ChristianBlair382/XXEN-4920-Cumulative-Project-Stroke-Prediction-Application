@@ -14,6 +14,7 @@ export default function DiagnosticScreen() {
   const [bmi, setBmi] = useState("");
   const [smokingStatus, setSmokingStatus] = useState("");
   const [diagnosticResult, setDiagnosticResult] = useState(null);
+  const [requestDurationMs, setRequestDurationMs] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -108,14 +109,17 @@ export default function DiagnosticScreen() {
     if (validationError) {
       setErrorMessage(validationError);
       setDiagnosticResult(null);
+      setRequestDurationMs(null);
       return;
     }
 
     setErrorMessage("");
     setDiagnosticResult(null);
+    setRequestDurationMs(null);
     setIsLoading(true);
 
     try {
+      const requestStartedAt = Date.now();
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -128,15 +132,18 @@ export default function DiagnosticScreen() {
       }
 
       const data = await response.json();
+      const elapsedMs = Math.round(Date.now() - requestStartedAt);
       const latestResult = {
         notAtRisk: data.not_at_risk,
         atRisk: data.at_risk,
       };
 
       setDiagnosticResult(latestResult);
+      setRequestDurationMs(elapsedMs);
 
       await saveLastDiagnosisResult(latestResult);
     } catch (error) {
+      setRequestDurationMs(null);
       setErrorMessage(
         error instanceof Error
           ? error.message
@@ -360,6 +367,9 @@ export default function DiagnosticScreen() {
             </Text>
             <Text style={styles.resultText}>
               At risk: {(diagnosticResult.atRisk * 100).toFixed(1)}%
+            </Text>
+            <Text style={styles.resultText}>
+              Response time: {requestDurationMs ?? 0} ms
             </Text>
           </View>
         ) : null}
