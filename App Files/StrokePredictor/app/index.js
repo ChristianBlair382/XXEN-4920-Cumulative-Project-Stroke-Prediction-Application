@@ -5,10 +5,17 @@ import AboutUsScreen from "../Screens/AboutUsScreen";
 import StepsScreen from "../Screens/StepsScreen";
 import FeedbackScreen from "../Screens/FeedbackScreen";
 import ProfileScreen from "../Screens/ProfileScreen";
+import LoginScreen from "../Screens/LoginScreen";
 import { useState } from "react";
 
 export default function Index() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
+
+    // If not logged in, show LoginScreen
+  if (!isLoggedIn) {
+    return <LoginScreen onLoginSuccess={() => setIsLoggedIn(true)} />;
+  }
 
   const renderScreen = () => {
     switch(activeTab) {

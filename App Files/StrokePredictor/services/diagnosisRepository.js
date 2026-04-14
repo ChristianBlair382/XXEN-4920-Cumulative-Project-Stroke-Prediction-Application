@@ -1,122 +1,57 @@
-import {
-  get,
-  orderByChild,
-  limitToLast,
-  push,
-  query,
-  ref,
-  set,
-} from "firebase/database";
-import { getFirebaseDatabase, initializeFirebase } from "./firebaseConfig";
+import { collection, addDoc, getDocs, query, orderBy, limit } from "firebase/firestore";
+import { db, auth } from "./firebaseConfig";
 
-const DEFAULT_USER_ID = "default-user";
+// Save a diagnosis result to Firestore under the logged-in user's collection
+export const saveLastDiagnosisResult = async ({ notAtRisk, atRisk, requestedAt = new Date().toISOString() }) => {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User not logged in.");
 
-let inMemoryLastDiagnosis = null;
+  const record = { notAtRisk, atRisk, requestedAt, userId };
 
-const normalizeRecord = (record, userId) => {
-  if (!record) return null;
+  const docRef = await addDoc(collection(db, "users", userId, "diagnosisResults"), record);
 
-  const notAtRisk = Number(record.notAtRisk ?? record.not_at_risk ?? 0);
-  const atRisk = Number(record.atRisk ?? record.at_risk ?? 0);
-
-  return {
-    id: record.id ?? null,
-    userId: record.userId ?? userId,
-    notAtRisk,
-    atRisk,
-    requestedAt: record.requestedAt ?? record.requested_at ?? new Date().toISOString(),
-  };
+  return { id: docRef.id, ...record };
 };
 
-export const initializeDiagnosisRepository = async () => {
-  initializeFirebase();
-};
+// Get the most recent diagnosis result for the logged-in user
+export const getLastDiagnosisResult = async () => {
+  const userId = auth.currentUser?.uid;
+  if (!userId) return null;
 
-export const saveLastDiagnosisResult = async ({
-  userId = DEFAULT_USER_ID,
-  notAtRisk,
-  atRisk,
-  requestedAt = new Date().toISOString(),
-}) => {
-  const normalized = normalizeRecord(
-    {
-      userId,
-      notAtRisk,
-      atRisk,
-      requestedAt,
-    },
-    userId
+  const q = query(
+    collection(db, "users", userId, "diagnosisResults"),
+    orderBy("requestedAt", "desc"),
+    limit(1)
   );
 
-  inMemoryLastDiagnosis = normalized;
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return null;
 
-  const database = getFirebaseDatabase();
-
-  if (!database) {
-    return normalized;
-  }
-
-  const resultsRef = ref(database, `users/${userId}/diagnosisResults`);
-  const newResultRef = push(resultsRef);
-
-  await set(newResultRef, {
-    notAtRisk: normalized.notAtRisk,
-    atRisk: normalized.atRisk,
-    requestedAt: normalized.requestedAt,
-  });
-
-  normalized.id = newResultRef.key;
-
-  return normalized;
+  const doc = snapshot.docs[0];
+  return { id: doc.id, ...doc.data() };
 };
 
-export const getLastDiagnosisResult = async (userId = DEFAULT_USER_ID) => {
-  const database = getFirebaseDatabase();
+// Get ALL diagnosis results for the logged-in user
+export const getAllDiagnosisResults = async () => {
+  const userId = auth.currentUser?.uid;
+  if (!userId) return [];
 
-  if (database) {
-    const resultsRef = ref(database, `users/${userId}/diagnosisResults`);
-    const latestResultQuery = query(
-      resultsRef,
-      orderByChild("requestedAt"),
-      limitToLast(1)
-    );
+  const q = query(
+    collection(db, "users", userId, "diagnosisResults"),
+    orderBy("requestedAt", "desc")
+  );
 
-    const snapshot = await get(latestResultQuery);
-
-    if (snapshot.exists()) {
-      const resultsMap = snapshot.val();
-      const [latestResultId] = Object.keys(resultsMap);
-      const latestResult = resultsMap[latestResultId];
-
-      const normalized = normalizeRecord(
-        {
-          id: latestResultId,
-          userId,
-          ...latestResult,
-        },
-        userId
-      );
-
-      inMemoryLastDiagnosis = normalized;
-
-      return normalized;
-    }
-  }
-
-  if (!inMemoryLastDiagnosis || inMemoryLastDiagnosis.userId !== userId) {
-    return null;
-  }
-
-  return inMemoryLastDiagnosis;
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
+
+// No-op kept for compatibility
+export const initializeDiagnosisRepository = async () => {};
 
 export const formatRiskStatus = (record) => {
   if (!record) return "Not Calculated";
-
   const atRiskPercent = Number(record.atRisk) * 100;
-
   if (atRiskPercent >= 70) return "High Risk";
   if (atRiskPercent >= 40) return "Moderate Risk";
-
   return "Low Risk";
 };

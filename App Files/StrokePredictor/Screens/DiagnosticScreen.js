@@ -14,6 +14,7 @@ export default function DiagnosticScreen() {
   const [bmi, setBmi] = useState("");
   const [smokingStatus, setSmokingStatus] = useState("");
   const [diagnosticResult, setDiagnosticResult] = useState(null);
+  const [requestDurationMs, setRequestDurationMs] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -103,49 +104,59 @@ export default function DiagnosticScreen() {
     return features;
   };
 
-  const handleCalculate = async () => {
-    const validationError = validateInputs();
-    if (validationError) {
-      setErrorMessage(validationError);
-      setDiagnosticResult(null);
-      return;
-    }
-
-    setErrorMessage("");
+ const handleCalculate = async () => {
+  const validationError = validateInputs();
+  if (validationError) {
+    setErrorMessage(validationError);
     setDiagnosticResult(null);
-    setIsLoading(true);
+    setRequestDurationMs(null);
+    return;
+  }
 
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ features: buildFeatureVector() }),
-      });
+  setErrorMessage("");
+  setDiagnosticResult(null);
+  setRequestDurationMs(null);
+  setIsLoading(true);
 
-      if (!response.ok) {
-        const detail = await response.text();
-        throw new Error(detail || "Server error");
-      }
+  try {
+    const requestStartedAt = Date.now();
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ features: buildFeatureVector() }),
+    });
 
-      const data = await response.json();
-      const latestResult = {
-        notAtRisk: data.not_at_risk,
-        atRisk: data.at_risk,
-      };
-
-      setDiagnosticResult(latestResult);
-
-      await saveLastDiagnosisResult(latestResult);
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to reach the diagnostic server."
-      );
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      const detail = await response.text();
+      throw new Error(detail || "Server error");
     }
-  };
+
+    const data = await response.json();
+    const elapsedMs = Math.round(Date.now() - requestStartedAt);
+    const latestResult = {
+      notAtRisk: data.not_at_risk,
+      atRisk: data.at_risk,
+      // Save inputs alongside results for a richer history
+      inputs: {
+        gender, age, hasHypertension, hasHeartDisease,
+        everMarried, workType, residenceType,
+        avgGlucoseLevel, bmi, smokingStatus,
+      },
+    };
+
+    setDiagnosticResult(latestResult);
+    setRequestDurationMs(elapsedMs);
+    
+    await saveLastDiagnosisResult(latestResult);
+  } catch (error) {
+    setRequestDurationMs(null);
+    setErrorMessage(
+      error instanceof Error ? error.message : "Unable to reach the diagnostic server."
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <ScrollView style={styles.container}>
@@ -357,6 +368,9 @@ export default function DiagnosticScreen() {
             <Text style={styles.resultTitle}>Diagnostic Results</Text>
             <Text style={styles.resultText}>
               Not at risk: {(diagnosticResult.notAtRisk * 100).toFixed(1)}%
+            </Text>
+            <Text style={styles.resultText}>
+              Response time: {requestDurationMs ?? 0} ms
             </Text>
             <Text style={styles.resultText}>
               At risk: {(diagnosticResult.atRisk * 100).toFixed(1)}%
