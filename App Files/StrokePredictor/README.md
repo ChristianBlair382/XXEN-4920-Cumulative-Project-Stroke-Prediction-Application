@@ -49,13 +49,13 @@ The app now uses Firebase Realtime Database for diagnostic result storage and re
 Set these Expo public environment variables before running:
 
 ```bash
-EXPO_PUBLIC_FIREBASE_API_KEY=
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=
-EXPO_PUBLIC_FIREBASE_DATABASE_URL=
-EXPO_PUBLIC_FIREBASE_PROJECT_ID=
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=
-EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-EXPO_PUBLIC_FIREBASE_APP_ID=
+EXPO_PUBLIC_FIREBASE_API_KEY= "AIzaSyAddO32E0QPpdCpB9_dPC-6KMgxyo6g25o" ,
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN= "stroke-health.firebaseapp.com" ,
+EXPO_PUBLIC_FIREBASE_DATABASE_URL= "https://stroke-health.firebaseio.com" ,
+EXPO_PUBLIC_FIREBASE_PROJECT_ID= "stroke-health" ,
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET= "stroke-health.firebasestorage.app" ,
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID= "971974847835" ,
+EXPO_PUBLIC_FIREBASE_APP_ID= "1:971974847835:web:13ac6552bd5f0d86bf7e7e" 
 ```
 
 Without these values, the app falls back to in-memory storage for the current runtime session.
