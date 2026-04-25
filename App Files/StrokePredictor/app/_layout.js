@@ -12,6 +12,14 @@ export default function RootLayout() {
           headerBackTitle: "Back"
         }}
       />
+      <Stack.Screen
+        name="diagnostic-details"
+        options={{
+          headerShown: true,
+          title: "Request Details",
+          headerBackTitle: "Back",
+        }}
+      />
     </Stack>
   );
 }

@@ -1,6 +1,7 @@
 import { Text, View, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { signOut } from "firebase/auth";
 import { auth } from "../services/firebaseConfig";
 import {
@@ -11,6 +12,7 @@ import {
 } from "../services/diagnosisRepository";
 
 export default function ProfileScreen({ onLogout }) {
+  const router = useRouter();
   const [latestResult, setLatestResult] = useState(null);
   const [allResults, setAllResults] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -57,6 +59,13 @@ export default function ProfileScreen({ onLogout }) {
     ]);
   };
 
+  const openDetails = (result) => {
+    router.push({
+      pathname: "/diagnostic-details",
+      params: { resultId: result.id },
+    });
+  };
+
   const riskStatus = isLoading ? "Loading..." : formatRiskStatus(latestResult);
 
   const statusColor = () => {
@@ -100,10 +109,15 @@ export default function ProfileScreen({ onLogout }) {
               No assessments yet. Complete your first diagnostic to see results here.
             </Text>
           ) : (
-            allResults.map((result, index) => (
-              <View key={result.id} style={styles.historyRow}>
+            allResults.map((result) => (
+              <TouchableOpacity
+                key={result.id}
+                style={styles.historyRow}
+                onPress={() => openDetails(result)}
+                activeOpacity={0.8}
+              >
                 <View style={styles.historyLeft}>
-                  <Text style={styles.historyIndex}>#{allResults.length - index}</Text>
+                  <Text style={styles.historyIndex}>ID: {result.requestId || "Unavailable"}</Text>
                   <Text style={styles.historyDate}>
                     {new Date(result.requestedAt).toLocaleString()}
                   </Text>
@@ -118,8 +132,9 @@ export default function ProfileScreen({ onLogout }) {
                   <Text style={styles.historyPct}>
                     {(result.atRisk * 100).toFixed(1)}% at risk
                   </Text>
+                  <Text style={styles.historyHint}>Tap to view inputs</Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))
           )}
         </View>
@@ -247,6 +262,11 @@ const styles = {
   historyPct: {
     fontSize: 12,
     color: "#999",
+    marginTop: 2,
+  },
+  historyHint: {
+    fontSize: 11,
+    color: "#00796B",
     marginTop: 2,
   },
   logoutButton: {

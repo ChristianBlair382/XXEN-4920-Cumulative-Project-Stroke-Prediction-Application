@@ -1,8 +1,20 @@
-import { Text, View, ScrollView, TextInput, TouchableOpacity } from "react-native";
-import { useState } from "react";
-import { saveLastDiagnosisResult } from "../services/diagnosisRepository";
+import {
+  Alert,
+  Text,
+  View,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
+import { useCallback, useRef, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import {
+  getLastDiagnosisResult,
+  saveLastDiagnosisResult,
+} from "../services/diagnosisRepository";
 
 export default function DiagnosticScreen() {
+  const hasShownReusePromptRef = useRef(false);
   const [gender, setGender] = useState("");
   const [age, setAge] = useState("");
   const [hasHypertension, setHasHypertension] = useState(false);
@@ -19,6 +31,81 @@ export default function DiagnosticScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const API_URL = "https://xxen-4920-cumulative-project-stroke.onrender.com/run_diagnostic";
+
+  const applySavedInputs = (inputs) => {
+    if (!inputs || typeof inputs !== "object") return;
+
+    const asText = (value) => {
+      if (value === null || value === undefined) return "";
+      return String(value);
+    };
+    const asBool = (value) => {
+      return value === true || value === "true" || value === 1 || value === "1";
+    };
+
+    setGender(asText(inputs.gender));
+    setAge(asText(inputs.age));
+    setHasHypertension(asBool(inputs.hasHypertension));
+    setHasHeartDisease(asBool(inputs.hasHeartDisease));
+    setEverMarried(asText(inputs.everMarried));
+    setWorkType(asText(inputs.workType));
+    setResidenceType(asText(inputs.residenceType));
+    setAvgGlucoseLevel(asText(inputs.avgGlucoseLevel));
+    setBmi(asText(inputs.bmi));
+    setSmokingStatus(asText(inputs.smokingStatus));
+
+    setErrorMessage("");
+    setDiagnosticResult(null);
+    setRequestDurationMs(null);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+
+      const maybePromptReuse = async () => {
+        if (hasShownReusePromptRef.current) return;
+
+        hasShownReusePromptRef.current = true;
+        let latestResult = null;
+        try {
+          latestResult = await getLastDiagnosisResult();
+        } catch {
+          return;
+        }
+
+        const lastInputs = latestResult?.inputs;
+
+        if (!isMounted || !lastInputs || typeof lastInputs !== "object") return;
+
+        Alert.alert(
+          "Reuse previous inputs?",
+          "Would you like to fill this form with your latest diagnostic inputs?",
+          [
+            {
+              text: "No",
+              style: "cancel",
+            },
+            {
+              text: "Yes",
+              onPress: () => applySavedInputs(lastInputs),
+            },
+          ]
+        );
+      };
+
+      maybePromptReuse();
+
+      return () => {
+        isMounted = false;
+        hasShownReusePromptRef.current = false;
+      };
+    }, [])
+  );
+
+  const generateRequestId = () => {
+    return `mobile-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  };
 
   const toNumber = (value) => {
     const parsed = parseFloat(value);
@@ -119,26 +206,42 @@ export default function DiagnosticScreen() {
     setIsLoading(true);
 
     try {
+      const clientRequestId = generateRequestId();
       const requestStartedAt = Date.now();
       const response = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Request-Id": clientRequestId,
+        },
         body: JSON.stringify({ features: buildFeatureVector() }),
       });
 
-  try {
-    const requestStartedAt = Date.now();
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ features: buildFeatureVector() }),
-    });
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}.`);
+      }
 
       const data = await response.json();
       const elapsedMs = Math.round(Date.now() - requestStartedAt);
+      const responseRequestId =
+        data.request_id || response.headers.get("X-Request-Id") || clientRequestId;
       const latestResult = {
         notAtRisk: data.not_at_risk,
         atRisk: data.at_risk,
+        requestId: responseRequestId,
+        // Save inputs alongside results for a richer history
+        inputs: {
+          gender,
+          age,
+          hasHypertension,
+          hasHeartDisease,
+          everMarried,
+          workType,
+          residenceType,
+          avgGlucoseLevel,
+          bmi,
+          smokingStatus,
+        },
       };
 
       setDiagnosticResult(latestResult);
@@ -155,33 +258,7 @@ export default function DiagnosticScreen() {
     } finally {
       setIsLoading(false);
     }
-
-    const data = await response.json();
-    const elapsedMs = Math.round(Date.now() - requestStartedAt);
-    const latestResult = {
-      notAtRisk: data.not_at_risk,
-      atRisk: data.at_risk,
-      // Save inputs alongside results for a richer history
-      inputs: {
-        gender, age, hasHypertension, hasHeartDisease,
-        everMarried, workType, residenceType,
-        avgGlucoseLevel, bmi, smokingStatus,
-      },
-    };
-
-    setDiagnosticResult(latestResult);
-    setRequestDurationMs(elapsedMs);
-    
-    await saveLastDiagnosisResult(latestResult);
-  } catch (error) {
-    setRequestDurationMs(null);
-    setErrorMessage(
-      error instanceof Error ? error.message : "Unable to reach the diagnostic server."
-    );
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -398,19 +475,13 @@ export default function DiagnosticScreen() {
               Response time: {requestDurationMs ?? 0} ms
             </Text>
             <Text style={styles.resultText}>
-              At risk: {(diagnosticResult.atRisk * 100).toFixed(1)}%
+              Request ID: {diagnosticResult.requestId || "Unavailable"}
             </Text>
             <Text style={styles.resultText}>
-              Response time: {requestDurationMs ?? 0} ms
+              At risk: {(diagnosticResult.atRisk * 100).toFixed(1)}%
             </Text>
           </View>
         ) : null}
-
-        <View style={styles.noteContainer}>
-          <Text style={styles.noteText}>
-            Additional information from your profile will be included in the assessment.
-          </Text>
-        </View>
       </View>
     </ScrollView>
   );
