@@ -1,8 +1,20 @@
-import { Text, View, ScrollView, TextInput, TouchableOpacity } from "react-native";
-import { useState } from "react";
-import { saveLastDiagnosisResult } from "../services/diagnosisRepository";
+import {
+  Alert,
+  Text,
+  View,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
+import { useCallback, useRef, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import {
+  getLastDiagnosisResult,
+  saveLastDiagnosisResult,
+} from "../services/diagnosisRepository";
 
 export default function DiagnosticScreen() {
+  const hasShownReusePromptRef = useRef(false);
   const [gender, setGender] = useState("");
   const [age, setAge] = useState("");
   const [hasHypertension, setHasHypertension] = useState(false);
@@ -19,6 +31,77 @@ export default function DiagnosticScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const API_URL = "https://xxen-4920-cumulative-project-stroke.onrender.com/run_diagnostic";
+
+  const applySavedInputs = (inputs) => {
+    if (!inputs || typeof inputs !== "object") return;
+
+    const asText = (value) => {
+      if (value === null || value === undefined) return "";
+      return String(value);
+    };
+    const asBool = (value) => {
+      return value === true || value === "true" || value === 1 || value === "1";
+    };
+
+    setGender(asText(inputs.gender));
+    setAge(asText(inputs.age));
+    setHasHypertension(asBool(inputs.hasHypertension));
+    setHasHeartDisease(asBool(inputs.hasHeartDisease));
+    setEverMarried(asText(inputs.everMarried));
+    setWorkType(asText(inputs.workType));
+    setResidenceType(asText(inputs.residenceType));
+    setAvgGlucoseLevel(asText(inputs.avgGlucoseLevel));
+    setBmi(asText(inputs.bmi));
+    setSmokingStatus(asText(inputs.smokingStatus));
+
+    setErrorMessage("");
+    setDiagnosticResult(null);
+    setRequestDurationMs(null);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+
+      const maybePromptReuse = async () => {
+        if (hasShownReusePromptRef.current) return;
+
+        hasShownReusePromptRef.current = true;
+        let latestResult = null;
+        try {
+          latestResult = await getLastDiagnosisResult();
+        } catch {
+          return;
+        }
+
+        const lastInputs = latestResult?.inputs;
+
+        if (!isMounted || !lastInputs || typeof lastInputs !== "object") return;
+
+        Alert.alert(
+          "Reuse previous inputs?",
+          "Would you like to fill this form with your latest diagnostic inputs?",
+          [
+            {
+              text: "No",
+              style: "cancel",
+            },
+            {
+              text: "Yes",
+              onPress: () => applySavedInputs(lastInputs),
+            },
+          ]
+        );
+      };
+
+      maybePromptReuse();
+
+      return () => {
+        isMounted = false;
+        hasShownReusePromptRef.current = false;
+      };
+    }, [])
+  );
 
   const generateRequestId = () => {
     return `mobile-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
@@ -399,12 +482,6 @@ export default function DiagnosticScreen() {
             </Text>
           </View>
         ) : null}
-
-        <View style={styles.noteContainer}>
-          <Text style={styles.noteText}>
-            Additional information from your profile will be included in the assessment.
-          </Text>
-        </View>
       </View>
     </ScrollView>
   );
