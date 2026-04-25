@@ -20,6 +20,10 @@ export default function DiagnosticScreen() {
 
   const API_URL = "https://xxen-4920-cumulative-project-stroke.onrender.com/run_diagnostic";
 
+  const generateRequestId = () => {
+    return `mobile-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  };
+
   const toNumber = (value) => {
     const parsed = parseFloat(value);
     return Number.isNaN(parsed) ? 0 : parsed;
@@ -119,26 +123,42 @@ export default function DiagnosticScreen() {
     setIsLoading(true);
 
     try {
+      const clientRequestId = generateRequestId();
       const requestStartedAt = Date.now();
       const response = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Request-Id": clientRequestId,
+        },
         body: JSON.stringify({ features: buildFeatureVector() }),
       });
 
-  try {
-    const requestStartedAt = Date.now();
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ features: buildFeatureVector() }),
-    });
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}.`);
+      }
 
       const data = await response.json();
       const elapsedMs = Math.round(Date.now() - requestStartedAt);
+      const responseRequestId =
+        data.request_id || response.headers.get("X-Request-Id") || clientRequestId;
       const latestResult = {
         notAtRisk: data.not_at_risk,
         atRisk: data.at_risk,
+        requestId: responseRequestId,
+        // Save inputs alongside results for a richer history
+        inputs: {
+          gender,
+          age,
+          hasHypertension,
+          hasHeartDisease,
+          everMarried,
+          workType,
+          residenceType,
+          avgGlucoseLevel,
+          bmi,
+          smokingStatus,
+        },
       };
 
       setDiagnosticResult(latestResult);
@@ -155,33 +175,7 @@ export default function DiagnosticScreen() {
     } finally {
       setIsLoading(false);
     }
-
-    const data = await response.json();
-    const elapsedMs = Math.round(Date.now() - requestStartedAt);
-    const latestResult = {
-      notAtRisk: data.not_at_risk,
-      atRisk: data.at_risk,
-      // Save inputs alongside results for a richer history
-      inputs: {
-        gender, age, hasHypertension, hasHeartDisease,
-        everMarried, workType, residenceType,
-        avgGlucoseLevel, bmi, smokingStatus,
-      },
-    };
-
-    setDiagnosticResult(latestResult);
-    setRequestDurationMs(elapsedMs);
-    
-    await saveLastDiagnosisResult(latestResult);
-  } catch (error) {
-    setRequestDurationMs(null);
-    setErrorMessage(
-      error instanceof Error ? error.message : "Unable to reach the diagnostic server."
-    );
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -398,10 +392,10 @@ export default function DiagnosticScreen() {
               Response time: {requestDurationMs ?? 0} ms
             </Text>
             <Text style={styles.resultText}>
-              At risk: {(diagnosticResult.atRisk * 100).toFixed(1)}%
+              Request ID: {diagnosticResult.requestId || "Unavailable"}
             </Text>
             <Text style={styles.resultText}>
-              Response time: {requestDurationMs ?? 0} ms
+              At risk: {(diagnosticResult.atRisk * 100).toFixed(1)}%
             </Text>
           </View>
         ) : null}

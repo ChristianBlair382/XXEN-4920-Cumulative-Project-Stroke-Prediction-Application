@@ -2,11 +2,16 @@ import { collection, addDoc, getDocs, query, orderBy, limit } from "firebase/fir
 import { db, auth } from "./firebaseConfig";
 
 // Save a diagnosis result to Firestore under the logged-in user's collection
-export const saveLastDiagnosisResult = async ({ notAtRisk, atRisk, requestedAt = new Date().toISOString() }) => {
+export const saveLastDiagnosisResult = async ({
+  notAtRisk,
+  atRisk,
+  requestId = null,
+  requestedAt = new Date().toISOString(),
+}) => {
   const userId = auth.currentUser?.uid;
   if (!userId) throw new Error("User not logged in.");
 
-  const record = { notAtRisk, atRisk, requestedAt, userId };
+  const record = { notAtRisk, atRisk, requestId, requestedAt, userId };
 
   const docRef = await addDoc(collection(db, "users", userId, "diagnosisResults"), record);
 
