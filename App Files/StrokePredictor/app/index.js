@@ -1,5 +1,4 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import { Tabs } from "expo-router";
 import HomeScreen from "../Screens/HomeScreen";
 import AboutUsScreen from "../Screens/AboutUsScreen";
 import StepsScreen from "../Screens/StepsScreen";
@@ -28,7 +27,7 @@ export default function Index() {
       case "feedback":
         return <FeedbackScreen />;
       case "profile":
-        return <ProfileScreen />;
+        return <ProfileScreen onLogout={() => setIsLoggedIn(false)} />;
       default:
         return <HomeScreen />;
     }

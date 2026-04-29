@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 import sys
 from typing import List
+from uuid import uuid4
 
 import torch
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from torch import nn
 
@@ -37,6 +39,9 @@ class DiagnosticRequest(BaseModel):
 
 
 app = FastAPI()
+logger = logging.getLogger("stroke_predictor_api")
+if not logger.handlers:
+    logging.basicConfig(level=logging.INFO)
 
 
 def load_checkpoint(path: Path):
@@ -67,8 +72,20 @@ def load_model() -> nn.Module:
 MODEL = load_model()
 
 
+@app.middleware("http")
+async def request_id_middleware(request: Request, call_next):
+    request_id = request.headers.get("X-Request-Id") or str(uuid4())
+    request.state.request_id = request_id
+    response = await call_next(request)
+    response.headers["X-Request-Id"] = request_id
+    return response
+
+
 @app.post("/run_diagnostic")
-def run_diagnostic(payload: DiagnosticRequest) -> dict:
+def run_diagnostic(payload: DiagnosticRequest, request: Request) -> dict:
+    request_id = getattr(request.state, "request_id", str(uuid4()))
+    logger.info("run_diagnostic request_id=%s feature_count=%s", request_id, len(payload.features))
+
     if len(payload.features) != EXPECTED_FEATURES:
         raise HTTPException(
             status_code=400,
@@ -99,6 +116,7 @@ def run_diagnostic(payload: DiagnosticRequest) -> dict:
     at_risk = float(output[1])
 
     return {
+        "request_id": request_id,
         "not_at_risk": not_at_risk,
         "at_risk": at_risk,
         "raw": output,

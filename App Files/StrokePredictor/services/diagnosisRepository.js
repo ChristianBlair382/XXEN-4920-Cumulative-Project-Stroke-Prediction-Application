@@ -1,12 +1,18 @@
-import { collection, addDoc, getDocs, query, orderBy, limit } from "firebase/firestore";
+import { collection, addDoc, doc, getDoc, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { db, auth } from "./firebaseConfig";
 
 // Save a diagnosis result to Firestore under the logged-in user's collection
-export const saveLastDiagnosisResult = async ({ notAtRisk, atRisk, requestedAt = new Date().toISOString() }) => {
+export const saveLastDiagnosisResult = async ({
+  notAtRisk,
+  atRisk,
+  requestId = null,
+  inputs = null,
+  requestedAt = new Date().toISOString(),
+}) => {
   const userId = auth.currentUser?.uid;
   if (!userId) throw new Error("User not logged in.");
 
-  const record = { notAtRisk, atRisk, requestedAt, userId };
+  const record = { notAtRisk, atRisk, requestId, inputs, requestedAt, userId };
 
   const docRef = await addDoc(collection(db, "users", userId, "diagnosisResults"), record);
 
@@ -43,6 +49,17 @@ export const getAllDiagnosisResults = async () => {
 
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+};
+
+export const getDiagnosisResultById = async (resultId) => {
+  const userId = auth.currentUser?.uid;
+  if (!userId || !resultId) return null;
+
+  const resultRef = doc(db, "users", userId, "diagnosisResults", resultId);
+  const snapshot = await getDoc(resultRef);
+  if (!snapshot.exists()) return null;
+
+  return { id: snapshot.id, ...snapshot.data() };
 };
 
 // No-op kept for compatibility
